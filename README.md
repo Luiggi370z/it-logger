@@ -1,6 +1,6 @@
 # IT LOGGER
 
-Small and quick application to show the fast development and prototyping with react and json-server.
+> Small and quick application to show the fast development and prototyping/mocking with react and json-server. The app handles tasks and issues.
 
 ## Stack
 
