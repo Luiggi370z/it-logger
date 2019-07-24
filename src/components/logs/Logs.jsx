@@ -3,10 +3,15 @@ import { connect } from 'react-redux'
 
 import Preloader from 'components/layout/Preloader'
 import PropTypes from 'prop-types'
-import { getLogs } from 'actions/logActions'
+import { getLogs, deleteLog, setCurrentLog } from 'actions/logActions'
 import LogItem from './LogItem'
 
-const Logs = ({ log: { logs, loading }, getLogs }) => {
+const Logs = ({
+  log: { logs, loading },
+  getLogs,
+  deleteLog,
+  setCurrentLog,
+}) => {
   useEffect(() => {
     getLogs()
     //eslint-disable-next-line
@@ -23,7 +28,12 @@ const Logs = ({ log: { logs, loading }, getLogs }) => {
         <p className="center">No logs to show...</p>
       ) : (
         logs.map(log => (
-          <LogItem key={log.id} log={log}>
+          <LogItem
+            key={log.id}
+            log={log}
+            onRemove={deleteLog}
+            onSelect={setCurrentLog}
+          >
             {log.message}
           </LogItem>
         ))
@@ -35,6 +45,8 @@ const Logs = ({ log: { logs, loading }, getLogs }) => {
 Logs.propTypes = {
   log: PropTypes.object.isRequired,
   getLogs: PropTypes.func.isRequired,
+  setCurrentLog: PropTypes.func.isRequired,
+  deleteLog: PropTypes.func.isRequired,
 }
 
 const mapStateToProps = state => ({
@@ -43,5 +55,5 @@ const mapStateToProps = state => ({
 
 export default connect(
   mapStateToProps,
-  { getLogs },
+  { getLogs, deleteLog, setCurrentLog },
 )(Logs)

@@ -1,9 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import PropTypes from 'prop-types'
+
+import { connect } from 'react-redux'
+import { addLog, updateLog, clearCurrentLog } from 'actions/logActions'
 import M from 'materialize-css/dist/js/materialize.min'
 
-const AddLogModal = () => {
-  const [form, setForm] = useState({ message: '', attention: false, tech: '' })
+const initialLog = { message: '', attention: false, tech: '' }
+
+const LogModal = ({ log, addLog, updateLog, clearCurrentLog }) => {
+  const { current } = log
+
+  useEffect(() => {
+    if (current) setForm(current)
+  }, [current])
+
+  const [form, setForm] = useState(initialLog)
   const { message, attention, tech } = form
+
   const handleOnChange = e =>
     setForm({
       ...form,
@@ -14,21 +27,32 @@ const AddLogModal = () => {
   const onSubmit = e => {
     e.preventDefault()
 
-    if (!message || !tech) M.toast({ html: 'Please enter a message and tech' })
-    else {
-      console.log(form)
+    if (!message || !tech) {
+      M.toast({ html: 'Please enter a message and tech' })
+      return
+    }
+    if (current) {
+      updateLog({ ...form, date: new Date() })
+      clearCurrentLog()
+      M.toast({ html: `Log updated by ${tech}` })
+    } else {
       setForm({
         message: '',
         attention: false,
         tech: '',
       })
+
+      addLog({ ...form, date: new Date() })
+      M.toast({ html: `Log added by ${tech}` })
     }
+
+    setForm(initialLog)
   }
 
   return (
-    <div id="add-log-modal" className="modal" style={modalStyle}>
+    <div id="log-modal" className="modal" style={modalStyle}>
       <div className="modal-content">
-        <h4>Enter System Log</h4>
+        <h4>{`${current ? 'Update' : 'Add New'} Log`}</h4>
         <div className="input-field">
           <input
             type="text"
@@ -38,9 +62,11 @@ const AddLogModal = () => {
             onChange={handleOnChange}
             required
           />
-          <label htmlFor="message" className="active">
-            Log Message
-          </label>
+          {!current && (
+            <label htmlFor="message" className="active">
+              Log Message
+            </label>
+          )}
         </div>
 
         <div className="row">
@@ -48,10 +74,9 @@ const AddLogModal = () => {
             <select
               name="tech"
               id="tech"
-              className="validate"
+              className="browser-default"
               value={tech}
               onChange={handleOnChange}
-              required
             >
               <option value="" disabled>
                 Select Technician
@@ -96,9 +121,22 @@ const AddLogModal = () => {
   )
 }
 
-const modalStyle = {
-  width: '75%',
-  // weight: '75%',
+LogModal.propTypes = {
+  log: PropTypes.object.isRequired,
+  addLog: PropTypes.func.isRequired,
+  updateLog: PropTypes.func.isRequired,
+  clearCurrentLog: PropTypes.func.isRequired,
 }
 
-export default AddLogModal
+const modalStyle = {
+  width: '75%',
+}
+
+const mapStateToProps = state => ({
+  log: state.log,
+})
+
+export default connect(
+  mapStateToProps,
+  { addLog, updateLog, clearCurrentLog },
+)(LogModal)
